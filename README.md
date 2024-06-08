@@ -1,2 +1,9 @@
-# hm_chatai_writing
-「HmOpenAiGpt」及び「HmGoogleGemini」を使って、AI支援を受けながら記事などを作成するためのマクロ
+# HmAiWriting
+
+# 使い方
+
+HmChatGptWritingと考え方は同じ。
+
+「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに配置して利用する。
+(どちらの対話エンジンでも利用出来る)
+
