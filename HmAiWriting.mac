@@ -1,0 +1,179 @@
+﻿// このファイルはサンプルですので、CCOとなります。
+// https://creativecommons.jp/sciencecommons/aboutcc0/
+
+$targetAiEngine = "";
+
+if (existfile(currentmacrodirectory + @"\HmOpenAiGpt.mac")) {
+    $targetAiEngine = "HmOpenAiGpt";
+}
+if (existfile(currentmacrodirectory + @"\HmGoogleGemini.mac")) {
+    $targetAiEngine = "HmGoogleGemini";
+}
+
+if ($targetAiEngine == "") {
+    message("このマクロと同じフォルダに、「HmOpenAiGpt」も「HmGoogleGemini」も見つかりませんでした。");
+    endmacro;
+}
+
+
+jsmode @"WebView2\" + $targetAiEngine;
+js {
+
+var _tempRequestQuestionText = "";
+function onRequestQuestionText() {
+
+    // リセットなら、非同期でリセットコマンドを送信
+    // レンダリング枠でリセットボタンを押したのと同じ動きにしておく
+    if (_tempRequestQuestionText == "reset") {
+        hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 500 );
+        // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
+        return false;
+    }
+
+    // それ以外なら、命令内容のテキストを返す。
+    return _tempRequestQuestionText;
+}
+
+function onCompleteAnswerText(answer_text) {
+    // 返答が返ってきたら、そのまま記事に挿入。
+    insert("\n\n" + answer_text + "\n\n");
+}
+
+function myEntryPoint() {
+
+    _tempRequestQuestionText = "";
+
+    let targetAiEngine = getVar("$targetAiEngine");
+    let selectedText = hidemaru.getSelectedText();
+    let currentMacroDir = currentmacrodirectory();
+
+    let menuhash = [
+        {
+            txt: "(&T)タイトル考案 ⇐ 選択中の複数の単語",
+            cmd: "以下のキーワードを基に日本語でタイトルを９個提案してください\n###\n" + selectedText
+        },
+        {
+            txt: "(&O)アウトライン案 ⇐ 選択中の単語群もしくはタイトル",
+            cmd: "以下のキーワードを基に記事構成案を考えてください\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&S)文面タタキ案 ⇐ 選択中のアウトラインの一部",
+            cmd: "以下の構成内容に関して、それぞれに具体的内容の文章を考えてください\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&E)簡潔文章案 ⇐ 選択中の文章",
+            cmd: "以下の文章の全てを簡潔な文章に直して下さい。\n###\n" + selectedText
+        },
+        {
+            txt: "(&Y)超要約案 ⇐ 選択中の文章",
+            cmd: "以下の文章全体を出来るだけ短い文章で要約してください。\n###\n" + selectedText
+        },
+        {
+            txt: "(&X)ツイート長 ⇐ 選択中の文章",
+            cmd: "以下の文章をツイッターのツイートに収まる100文字以上140文字未満の文章に要約してください。\n###\n" + selectedText
+        },
+        {
+            txt: "(&D)詳細文章案 ⇐ 選択中の文章",
+            cmd: "以下の文章の全てを深い内容の詳細な文章に直して下さい。\n###\n" + selectedText
+        },
+        {
+            txt: "(&C)変更文章案 ⇐ 選択中の文章",
+            cmd: "以下の文章を文章構成を大きく変更して書き換えてください。３つ提示してください。提示した文章と同じぐらいの長さにしてください。\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&K)根拠やデータ ⇐ 選択中の文章",
+            cmd: "以下の文章の根拠やデータを提示してください、必要に応じて「表」や「アスキーアートを使ったグラフ」を使って下さい。ただし条件として、\n" +
+                "- 架空の言葉である場合を考慮してください。\n" +
+                "- 回答に自身がない場合は答えないでください。\n" +
+                "- 不正確な可能性が高い場合は答えないでください。\n" +
+                "- 理解できなければ答えないでください。\n" +
+                "\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&I)言葉の意味 ⇐ 選択中の単語",
+            cmd: "以下の言葉の意味を説明してください。ただし条件として、\n" +
+                "- 架空の言葉である場合を考慮してください。\n" +
+                "- 回答に自身がない場合は答えないでください。\n" +
+                "- 不正確な可能性が高い場合は答えないでください。\n" +
+                "- 理解できなければ答えないでください。\n" +
+                "\n###\n" + selectedText
+        },
+        {
+            txt: "(&R)類似表現 ⇐ 選択中の単語",
+            cmd: "以下の単語の類似表現を９個提案してください\n###\n" + selectedText
+        },
+        {
+            txt: "(&M)誤字脱字 ⇐ 選択中の文章",
+            cmd: "以下の文章の全てに対して誤字脱字や、タイプミス、不適切な表現をチェックしてください。不適切な箇所だけを提示してください。\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&U)Youtube用脚本案 ⇐ 選択中の単語群もしくはタイトル",
+            cmd: "Youtube用に「" + selectedText + "」についての動画を作成するから脚本を書いてください。"
+        },
+        {
+            txt: "(&L)詳細台本案 ⇐ 選択中の脚本の一部分",
+            cmd: "以下の部分の詳細な台本を書いて下さい。\n###\n" + selectedText
+        },
+        {
+            txt: "\x01",
+            cmd: ""
+        },
+        {
+            txt: "(&R)全リセット",
+            cmd: "reset"
+        },
+    ];
+
+    let menuTextList = menuhash.map(item=>item.txt);
+    let menuCommandList = menuhash.map(item=>item.cmd);
+
+    let selectedMenuID = menuarray(menuTextList);
+ 
+
+    // 0はメニューキャンセル
+    if (selectedMenuID === 0) {
+ 
+        // HmGoogleGeminiのレンダリング枠を閉じておく
+        renderpanecommand({target:targetAiEngine, show:0});
+ 
+        // キャンセルの意思なので、HmGoogleGemini自体を呼び出さない
+        return;
+    }
+ 
+    // なんだかのメニュー内容を選んでいるのであれば...
+    else {
+        let selectedMenuIX = selectedMenuID - 1; // menu は選択した番号が1から始まるから0からになおす
+ 
+        // メニューで選んだ内容を後で使えるようにする。
+        _tempRequestQuestionText = menuCommandList[selectedMenuIX]
+ 
+	    let argobj = { onRequestQuestionText: 1, onCompleteAnswerText: 1 };
+	    hidemaru.postExecMacroFile(`"${currentMacroDir}\\${targetAiEngine}.mac"`, argobj );
+    }
+}
+
+myEntryPoint();
+
+
+} // js
+
