@@ -227,7 +227,7 @@ function myEntryPoint() {
 
         // 確実にpostExecMacroFileを行う書き方
         let peRetry = hidemaru.setInterval(()=>{
-            if (hidemaru.isScheduled?.()) return; // 再挑戦
+            if (hidemaru.isMacroExecuting()) return; // 再挑戦
             let scheduled = hidemaru.postExecMacroFile(`"${currentMacroDir}\\${targetAiEngine}.mac"`, argobj );
             if (scheduled === 0) return; // 再挑戦
             hidemaru.clearInterval(peRetry);
