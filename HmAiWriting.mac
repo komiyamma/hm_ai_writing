@@ -46,13 +46,13 @@ function onRequestQuestionText() {
     // 「レンダリング枠」で「全リセット」のボタンを押したかのような動きにしておく
     if (_tempRequestQuestionText == "reset") {
         hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 100 );
-        // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
-        return false;
+
+        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
     }
     else if (_tempRequestQuestionText == "paste") {
         hidemaru.setTimeout( ()=>{onHtmlEventHandler("paste"); }, 100 );
-        // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
-        return false;
+
+        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
     }
 
     // それ以外なら、構築した質問内容のテキストを返す。
@@ -247,7 +247,7 @@ function myEntryPoint() {
         // HmGoogleGeminiのレンダリング枠を閉じておく
         renderpanecommand({target:targetAiEngine, show:0});
 
-        // キャンセルの意思なので、HmGoogleGemini自体を呼び出さない
+        // キャンセルの意思なので、AI応答のマクロファイル自体を呼び出さない
         return;
     }
 
@@ -255,10 +255,10 @@ function myEntryPoint() {
     else {
         let selectedMenuIX = selectedMenuID - 1; // menu は選択した番号が1から始まるから0からになおす
 
-        // メニューで選んだ内容を後で使えるようにする。
+        // メニューで選んだ内容を後で使えるようにvar大域の変数に代入する。
         _tempRequestQuestionText = menuCommandList[selectedMenuIX]
 
-        // この応答はＡＩ記憶のヒストリーに残すのか残さないのか
+        // この応答はＡＩ記憶のヒストリーに残すのか残さないのか。後で使うのでvar大域の変数に代入する。
         _shouldRememberLastResponse = menuHistoryList[selectedMenuIX]
 
         let argobj = { onRequestQuestionText: 1, onCompleteAnswerText: 1 };
