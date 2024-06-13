@@ -1,20 +1,41 @@
 ﻿// HmAiWriting v1.1.1.4
 
-// このファイルはサンプルですので、CCOとなります。
+// このファイルはCCOとなります。
 // https://creativecommons.jp/sciencecommons/aboutcc0/
 
 
-// 一体このマクロは、
-// 「HmOpenAiGpt」と同じところにある？
-// 「HmGoogleGemini」と同じところにある？
+jsmode @"WebView2" + currentmacrofilename;
 
-$targetAiEngine = "";
+js {
+    let targetAiDirectory = "";
 
-if (existfile(currentmacrodirectory + @"\HmOpenAiGpt.mac")) {
-    $targetAiEngine = "HmOpenAiGpt";
-}
-if (existfile(currentmacrodirectory + @"\HmGoogleGemini.mac")) {
-    $targetAiEngine = "HmGoogleGemini";
+    // 対象のAiエンジン(HmOpenAiGpt, HmGoogleGemini)と、そのマクロファイルのパスを取得する
+    function getAiEngineMacroPath(targetAiDirectory) {
+        if (targetAiDirectory == "") {
+            targetAiDirectory = currentmacrodirectory();
+        }
+
+        let targetAiEngine = "";
+        let targetAiMacroPath = "";
+
+        targetAiEngine = "HmOpenAiGpt";
+        targetAiMacroPath = `${targetAiDirectory}\\${targetAiEngine}.mac`;
+        if (existfile(targetAiMacroPath)) {
+            return [targetAiMacroPath, targetAiEngine];
+        }
+
+        targetAiEngine = "HmGoogleGemini";
+        targetAiMacroPath = `${targetAiDirectory}\\${targetAiEngine}.mac`;
+        if (existfile(targetAiMacroPath)) {
+            return [targetAiMacroPath, targetAiEngine];
+        }
+
+        return ["", ""];
+    }
+
+    let [targetAiMacroPath, targetAiEngine] =  getAiEngineMacroPath(targetAiDirectory);
+    setVar("$targetAiMacroPath", targetAiMacroPath);
+    setVar("$targetAiEngine", targetAiEngine);
 }
 
 if ($targetAiEngine == "") {
@@ -68,6 +89,7 @@ function myEntryPoint() {
     _tempRequestQuestionText = "";
 
     let targetAiEngine = getVar("$targetAiEngine");
+    let targetAiMacroPath = getVar("$targetAiMacroPath");
     let currentMacroDir = currentmacrodirectory();
 
     let selectedText = hidemaru.getSelectedText();
@@ -256,7 +278,7 @@ function myEntryPoint() {
         // 確実にpostExecMacroFileを行う書き方
         let peRetry = hidemaru.setInterval(()=>{
             if (hidemaru.isMacroExecuting()) return; // 再挑戦
-            let isScheduled = hidemaru.postExecMacroFile(`"${currentMacroDir}\\${targetAiEngine}.mac"`, argobj ) ?? 1;
+            let isScheduled = hidemaru.postExecMacroFile(`"${targetAiMacroPath}"`, argobj ) ?? 1;
             if (isScheduled) { hidemaru.clearInterval(peRetry); }
         }, 100);
     }
