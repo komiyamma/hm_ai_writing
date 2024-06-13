@@ -7,33 +7,21 @@
 jsmode @"WebView2" + currentmacrofilename;
 
 js {
-    let targetAiDirectory = "";
+    const myTargetAiDirectory = "";
 
-    // 対象のAiエンジン(HmOpenAiGpt, HmGoogleGemini)と、そのマクロファイルのパスを取得する
-    function getAiEngineMacroPath(targetAiDirectory) {
-        if (targetAiDirectory == "") {
-            targetAiDirectory = currentmacrodirectory();
+    // 対象のターゲットディレクトリにあるAIマクロファイルのパスとエンジン名を取得する。
+    function getAiEngineMacroPath(targetAiDirectory = currentmacrodirectory()) {
+        const engines = ["HmOpenAiGpt", "HmGoogleGemini"];
+        for (const engine of engines) {
+            const targetAiMacroPath = `${targetAiDirectory}\\${engine}.mac`;
+            if (existfile(targetAiMacroPath)) {
+                return [targetAiMacroPath, engine];
+            }
         }
-
-        let targetAiEngine = "";
-        let targetAiMacroPath = "";
-
-        targetAiEngine = "HmOpenAiGpt";
-        targetAiMacroPath = `${targetAiDirectory}\\${targetAiEngine}.mac`;
-        if (existfile(targetAiMacroPath)) {
-            return [targetAiMacroPath, targetAiEngine];
-        }
-
-        targetAiEngine = "HmGoogleGemini";
-        targetAiMacroPath = `${targetAiDirectory}\\${targetAiEngine}.mac`;
-        if (existfile(targetAiMacroPath)) {
-            return [targetAiMacroPath, targetAiEngine];
-        }
-
         return ["", ""];
     }
 
-    let [targetAiMacroPath, targetAiEngine] =  getAiEngineMacroPath(targetAiDirectory);
+    let [targetAiMacroPath, targetAiEngine] = getAiEngineMacroPath(myTargetAiDirectory);
     setVar("$targetAiMacroPath", targetAiMacroPath);
     setVar("$targetAiEngine", targetAiEngine);
 }
