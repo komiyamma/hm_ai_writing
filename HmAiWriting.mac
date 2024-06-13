@@ -34,7 +34,12 @@ function onRequestQuestionText() {
     // リセットなら、非同期でリセットコマンドを送信
     // 「レンダリング枠」で「全リセット」のボタンを押したかのような動きにしておく
     if (_tempRequestQuestionText == "reset") {
-        hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 500 );
+        hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 100 );
+        // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
+        return false;
+    }
+    else if (_tempRequestQuestionText == "paste") {
+        hidemaru.setTimeout( ()=>{onHtmlEventHandler("paste"); }, 100 );
         // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
         return false;
     }
@@ -70,12 +75,12 @@ function myEntryPoint() {
     if (selectedText) {
         menuhash = [
             {
-                text: "(&T)タイトル考案 ⇐ 選択中の複数の単語",
+                text: "タイトル考案(&T) ⇐ 選択中の複数の単語",
                 cmnd: "以下のキーワードを基に日本語でタイトルを９個提案してください\n\n###\n\n" + selectedText,
                 hist: true,
             },
             {
-                text: "(&O)アウトライン案 ⇐ 選択中の単語群もしくはタイトル",
+                text: "アウトライン案(&O) ⇐ 選択中の単語群もしくはタイトル",
                 cmnd: "以下のキーワードを基に記事構成案を考えてください\n\n###\n\n" + selectedText,
                 hist: true,
             },
@@ -85,7 +90,7 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&S)文面ラフ案 ⇐ 選択中のアウトラインの一部",
+                text: "文面ラフ案(&S) ⇐ 選択中のアウトラインの一部",
                 cmnd: "以下の構成内容に関して、それぞれに具体的内容の文章を考えてください\n\n###\n\n" + selectedText,
                 hist: true,
             },
@@ -95,27 +100,27 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&E)簡潔文章案 ⇐ 選択中の文章",
+                text: "簡潔文章案(&E) ⇐ 選択中の文章",
                 cmnd: "次の文章の全てを簡潔な文章に直して下さい。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
-                text: "(&Y)超要約案 ⇐ 選択中の文章",
+                text: "超要約案(&Y) ⇐ 選択中の文章",
                 cmnd: "次の文章全体を出来るだけ短い文章で要約してください。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
-                text: "(&X)ツイート長 ⇐ 選択中の文章",
+                text: "ツイート長(&X) ⇐ 選択中の文章",
                 cmnd: "次の文章をツイッターのツイートに収まる100文字以上140文字未満の文章に要約してください。ツイッターに適した文面にしてください。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
-                text: "(&D)詳細文章案 ⇐ 選択中の文章",
+                text: "詳細文章案(&D) ⇐ 選択中の文章",
                 cmnd: "次の文章の全てを深い内容の詳細な文章に直して下さい。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
-                text: "(&C)変更文章案 ⇐ 選択中の文章",
+                text: "変更文章案(&C) ⇐ 選択中の文章",
                 cmnd: "次の文章を文章構成を大きく変更して書き換えてください。３つ提示してください。提示した文章と同じぐらいの長さにしてください。\n\n###\n\n" + selectedText,
                 hist: false,
             },
@@ -125,7 +130,7 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&K)根拠やデータ ⇐ 選択中の文章",
+                text: "根拠やデータ(&K) ⇐ 選択中の文章",
                 cmnd: "次の文章の根拠やデータを提示してください、必要に応じて「表」や「アスキーアートを使ったグラフ」を使って下さい。ただし条件として、\n" +
                     "- 架空の言葉である場合を考慮してください。\n" +
                     "- 回答に自身がない場合は答えないでください。\n" +
@@ -140,7 +145,7 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&I)言葉の意味 ⇐ 選択中の単語",
+                text: "言葉の意味(&I) ⇐ 選択中の単語",
                 cmnd: "以下の言葉の意味を説明してください。ただし条件として、\n" +
                     "- 架空の言葉である場合を考慮してください。\n" +
                     "- 回答に自身がない場合は答えないでください。\n" +
@@ -150,12 +155,12 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&B)類似表現 ⇐ 選択中の単語",
+                text: "類似表現(&B) ⇐ 選択中の単語",
                 cmnd: "次に示す単語の類似表現を９個提案してください。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
-                text: "(&M)誤字脱字 ⇐ 選択中の文章",
+                text: "誤字脱字(&G) ⇐ 選択中の文章",
                 cmnd: "次の文章の対して誤字脱字や、タイプミス、不適切な表現をチェックしてください。不適切な箇所だけを提示してください。\n\n###\n\n" + selectedText,
                 hist: false,
             },
@@ -165,12 +170,12 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&U)Youtube用脚本案 ⇐ 選択中の単語群もしくはタイトル",
+                text: "Youtube用脚本案(&U) ⇐ 選択中の単語群もしくはタイトル",
                 cmnd: "Youtube用に「" + selectedText + "」についての動画を作成するから脚本を書いてください。",
                 hist: true,
             },
             {
-                text: "(&L)詳細台本案 ⇐ 選択中の脚本の一部分",
+                text: "詳細台本案(&L) ⇐ 選択中の脚本の一部分",
                 cmnd: "以下の部分の詳細な台本を書いて下さい。\n\n###\n\n" + selectedText,
                 hist: true,
             },
@@ -180,8 +185,23 @@ function myEntryPoint() {
                 hist: false,
             },
             {
-                text: "(&R)全リセット",
+                text: "選択テキストの内容を質問する(&Q)",
+                cmnd: selectedText,
+                hist: false,
+            },
+            {
+                text: "\x01",
+                cmnd: "",
+                hist: false,
+            },
+            {
+                text: "全リセット(&R)",
                 cmnd: "reset",
+                hist: false,
+            },
+            {
+                text: "応答を張り付け (&V)",
+                cmnd: "paste",
                 hist: false,
             },
         ];
@@ -190,8 +210,14 @@ function myEntryPoint() {
     else {
         menuhash = [
             {
-                text: "(&R)全リセット",
-                cmnd: "reset"
+                text: "全リセット(&R)",
+                cmnd: "reset",
+                hist: false,
+            },
+            {
+                text: "応答を張り付け (&V)",
+                cmnd: "paste",
+                hist: false,
             },
         ];
     }
@@ -228,9 +254,8 @@ function myEntryPoint() {
         // 確実にpostExecMacroFileを行う書き方
         let peRetry = hidemaru.setInterval(()=>{
             if (hidemaru.isMacroExecuting()) return; // 再挑戦
-            let scheduled = hidemaru.postExecMacroFile(`"${currentMacroDir}\\${targetAiEngine}.mac"`, argobj );
-            if (scheduled === 0) return; // 再挑戦
-            hidemaru.clearInterval(peRetry);
+            let isScheduled = hidemaru.postExecMacroFile(`"${currentMacroDir}\\${targetAiEngine}.mac"`, argobj ) ?? 1;
+            if (isScheduled) { hidemaru.clearInterval(peRetry); }
         }, 100);
     }
 }
