@@ -8,11 +8,13 @@
 
 jsmode @"WebView2\" + currentmacrofilename;
 
+// 「HmOpenAiGpt」または「HmGoogleGemini」のどちらかのAIを使うのかを定める
 js {
 
     let myTargetAiDirectory = "";
 
-    // 「macrodir()+"\\HmOpenAiGpt"」 や 「"C:\\mydir\\HmGoogleGemini"」 などといった形で、指定する。
+    // 「HmOpenAiGptのディレクトリ」もしくは「HmGoogleGeminiのディレクトリ」を指定する。
+    // 「macrodir()+"\\HmOpenAiGpt"」 や 「"C:\\mydir\\HmGoogleGemini"」 などといった形。
     // よくわからない人は、「このHmAiWriting.mac」自体を、
     // 「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに入れておけば、対象エンジンを検知できる。
 
@@ -86,10 +88,10 @@ function onCompleteAnswerText(answer_text) {
 
     // クリップボードに追加しておく(境界をわかりやすくするため、改行を加えておく)
     setclipboard(answer_text + "\n");
-    
+
     // カーソルが先頭にないなら、行末で改行を入れる。
     if(column() > 0) {
-        golinend2();
+        golineend2();
         insert("\n");
     }
 
@@ -102,6 +104,7 @@ function onCompleteAnswerText(answer_text) {
 function myEntryPoint() {
 
     _globalRequestQuestionText = "";
+    _globalRememberLastResponse = true;
 
     const targetAiEngine = getVar("$targetAiEngine");
     const targetAiMacroPath = getVar("$targetAiMacroPath");
@@ -257,7 +260,7 @@ function myEntryPoint() {
         ];
     }
 
-    const menuTextList = menuhash.map(item=>item.text);
+    const menuTextList    = menuhash.map(item=>item.text);
     const menuCommandList = menuhash.map(item=>item.cmnd);
     const menuHistoryList = menuhash.map(item=>item.hist);
 
