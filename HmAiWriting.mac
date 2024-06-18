@@ -37,7 +37,15 @@ js {
 }
 
 if ($targetAiEngine == "") {
-    message("「HmOpenAiGpt.mac」「HmGoogleGemini.mac」\nいずれのAIマクロも見つかりませんでした。\n\n変数「myTargetAiDirectory」に「対象AIのディレクトリ」を設定するか\nもしくは「対象AIのフォルダ」に「HmAiWriting.macをコピー」してください。");
+    message(
+    """
+    「HmOpenAiGpt.mac」「HmGoogleGemini.mac」
+    いずれのAIマクロも見つかりませんでした。
+    
+    変数「myTargetAiDirectory」に「対象AIのディレクトリ」を設定するか、
+    もしくは「対象AIのフォルダ」に「HmAiWriting.macをコピー」してください。
+    """
+    );
     endmacro;
 }
 
