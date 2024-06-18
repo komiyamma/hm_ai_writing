@@ -58,65 +58,13 @@ if ($targetAiEngine == "") {
 jsmode @"WebView2\" + $targetAiEngine;
 js {
 
-// 質問内容を記憶バッファー
-var _globalRequestQuestionText = "";
 
-// 最後した「質問と応答」をＡＩ記憶に残すか残さないのか。
-// (その場限りの指示を出したつもりでもＡＩはずっと記憶するので、返答によからぬ影響を与えるため）
-var _globalRememberLastResponse = true;
-
-function onRequestQuestionText() {
-
-    // リセットなら、非同期でリセットコマンドを送信
-    // 「レンダリング枠」で「全リセット」のボタンを押したかのような動きにしておく
-    if (_globalRequestQuestionText == "reset") {
-        hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 100 );
-
-        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
-    }
-    else if (_globalRequestQuestionText == "paste") {
-        hidemaru.setTimeout( ()=>{onHtmlEventHandler("paste"); }, 100 );
-
-        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
-    }
-
-    // それ以外なら、構築した質問内容のテキストを返す。
-    return _globalRequestQuestionText;
-}
-
-function onCompleteAnswerText(answer_text) {
-
-    // クリップボードに追加しておく(境界をわかりやすくするため、改行を加えておく)
-    setclipboard(answer_text + "\n");
-
-    // カーソルが先頭にないなら、行末で改行を入れる。
-    if(column() > 0) {
-        golineend2();
-        insert("\n");
-    }
-
-    // その指示と返答を、AI履歴として記憶するべきではないなら、AIの記憶から消す
-    if (!_globalRememberLastResponse) {
-        hidemaru.setTimeout(() => { onHtmlEventHandler("pop"); }, 300);
-    }
-}
-
-function myEntryPoint() {
-
-    _globalRequestQuestionText = "";
-    _globalRememberLastResponse = true;
-
-    const targetAiEngine = getVar("$targetAiEngine");
-    const targetAiMacroPath = getVar("$targetAiMacroPath");
-    const currentMacroDir = currentmacrodirectory();
-
+function getMyMenuHash() {
     const selectedText = hidemaru.getSelectedText();
 
-    let menuhash = [];
     // テキストの選択がある時のメニュー
     if (selectedText) {
-        menuhash =
-        [
+        return [
             {
                 text: "タイトル考案(&T) ⇐ 選択中の複数の単語",
                 cmnd: "以下のキーワードを基に日本語でタイトルを９個提案してください\n\n###\n\n" + selectedText,
@@ -245,8 +193,7 @@ function myEntryPoint() {
     }
     // テキストの選択が無い時のメニュー
     else {
-        menuhash =
-        [
+        return [
             {
                 text: "全リセット(&R)",
                 cmnd: "reset",
@@ -259,6 +206,61 @@ function myEntryPoint() {
             },
         ];
     }
+}
+
+// 質問内容を記憶バッファー
+var _globalRequestQuestionText = "";
+
+// 最後した「質問と応答」をＡＩ記憶に残すか残さないのか。
+// (その場限りの指示を出したつもりでもＡＩはずっと記憶するので、返答によからぬ影響を与えるため）
+var _globalRememberLastResponse = true;
+
+function onRequestQuestionText() {
+
+    // リセットなら、非同期でリセットコマンドを送信
+    // 「レンダリング枠」で「全リセット」のボタンを押したかのような動きにしておく
+    if (_globalRequestQuestionText == "reset") {
+        hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 100 );
+
+        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
+    }
+    else if (_globalRequestQuestionText == "paste") {
+        hidemaru.setTimeout( ()=>{onHtmlEventHandler("paste"); }, 100 );
+
+        return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
+    }
+
+    // それ以外なら、構築した質問内容のテキストを返す。
+    return _globalRequestQuestionText;
+}
+
+function onCompleteAnswerText(answer_text) {
+
+    // クリップボードに追加しておく(境界をわかりやすくするため、改行を加えておく)
+    setclipboard(answer_text + "\n");
+
+    // カーソルが先頭にないなら、行末で改行を入れる。
+    if(column() > 0) {
+        golineend2();
+        insert("\n");
+    }
+
+    // その指示と返答を、AI履歴として記憶するべきではないなら、AIの記憶から消す
+    if (!_globalRememberLastResponse) {
+        hidemaru.setTimeout(() => { onHtmlEventHandler("pop"); }, 300);
+    }
+}
+
+function myEntryPoint() {
+
+    _globalRequestQuestionText = "";
+    _globalRememberLastResponse = true;
+
+    const targetAiEngine = getVar("$targetAiEngine");
+    const targetAiMacroPath = getVar("$targetAiMacroPath");
+    const currentMacroDir = currentmacrodirectory();
+
+    const menuhash = getMyMenuHash();
 
     const menuTextList    = menuhash.map(item=>item.text);
     const menuCommandList = menuhash.map(item=>item.cmnd);
