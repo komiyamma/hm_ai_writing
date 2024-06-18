@@ -1,18 +1,26 @@
 ﻿/*
- * HmAiWriting v1.1.1.4
+ * HmAiWriting v1.1.1.9
  *
  * Copyright (c) 2024 Akitsugu Komiyama
  * under the MIT License
  */
 
 
-jsmode @"WebView2" + currentmacrofilename;
+jsmode @"WebView2\" + currentmacrofilename;
 
 js {
-    const myTargetAiDirectory = "";
+    let myTargetAiDirectory = @""; // 
+                                   // macrodir() + @"\HmOpenAiGpt"; や @"C:\mydir\HmGoogleGemini"; などといった形で、指定する。
+                                   // よくわからない人は、「このHmAiWriting.mac」自体を「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに入れておけば、
+                                   // 対象エンジンを検知できる。
+
+    // 設定がないなら、このマクロは対象の会話AIマクロ(HmOpenAiGpt.macもしくはHmGoogleGemini.mac)と同じ場所
+    if (!myTargetAiDirectory) {
+        myTargetAiDirectory = currentmacrodirectory();
+    }
 
     // 対象のターゲットディレクトリにあるAIマクロファイルのパスとエンジン名を取得する。
-    function getAiEngineMacroPath(targetAiDirectory = currentmacrodirectory()) {
+    function getAiEngineMacroPath(targetAiDirectory) {
         const engines = ["HmOpenAiGpt", "HmGoogleGemini"];
         for (const engine of engines) {
             const targetAiMacroPath = `${targetAiDirectory}\\${engine}.mac`;
@@ -29,7 +37,7 @@ js {
 }
 
 if ($targetAiEngine == "") {
-    message("この「マクロファイル」と同じフォルダに、\n【HmOpenAiGpt.mac】【HmGoogleGemini.mac】\nいずれのAIマクロも見つかりませんでした。");
+    message("「HmOpenAiGpt.mac」「HmGoogleGemini.mac」\nいずれのAIマクロも見つかりませんでした。\n\n変数「myTargetAiDirectory」に「対象AIのディレクトリ」を設定するか\nもしくは「対象AIのフォルダ」に「HmAiWriting.macをコピー」してください。");
     endmacro;
 }
 
@@ -145,12 +153,9 @@ function myEntryPoint() {
             },
             {
                 text: "根拠やデータ(&K) ⇐ 選択中の文章",
-                cmnd: "次の文章の根拠やデータを提示してください、必要に応じて「表」や「アスキーアートを使ったグラフ」を使って下さい。ただし条件として、\n" +
-                    "- 架空の言葉である場合を考慮してください。\n" +
-                    "- 回答に自身がない場合は答えないでください。\n" +
-                    "- 不正確な可能性が高い場合は答えないでください。\n" +
-                    "- 理解できなければ答えないでください。\n" +
-                    "\n\n###\n\n" + selectedText,
+                cmnd: "次の文章が正しいそうかどうかをまずは答えてください。\nその後、根拠やデータを提示できそうなら示してください\n必要に応じて「表」や「アスキーアートを使ったグラフ」を使って下さい。\n" +
+                      "回答に自信がない場合は、返答の最後に１行空白行をあけて「(回答に自信がもてません)」と添えてください。\n" +
+                      "\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
@@ -160,12 +165,9 @@ function myEntryPoint() {
             },
             {
                 text: "言葉の意味(&I) ⇐ 選択中の単語",
-                cmnd: "以下の言葉の意味を説明してください。ただし条件として、\n" +
-                    "- 架空の言葉である場合を考慮してください。\n" +
-                    "- 回答に自身がない場合は答えないでください。\n" +
-                    "- 不正確な可能性が高い場合は答えないでください。\n" +
-                    "- 理解できなければ答えないでください。\n" +
-                    "\n\n###\n\n" + selectedText,
+                cmnd: "以下の言葉の意味を説明してください。\n" +
+                      "回答に自信がない場合は、返答の最後に１行空白行をあけて「(回答に自信がありません)」と添えてください。\n" +
+                      "\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
@@ -201,7 +203,7 @@ function myEntryPoint() {
             {
                 text: "選択テキストの内容を質問する(&Q)",
                 cmnd: selectedText,
-                hist: false,
+                hist: true,
             },
             {
                 text: "\x01",
