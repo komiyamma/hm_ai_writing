@@ -1,5 +1,5 @@
 ﻿/*
- * HmAiWriting v1.1.2.1
+ * HmAiWriting v1.1.2.2
  *
  * Copyright (c) 2024 Akitsugu Komiyama
  * under the MIT License
@@ -9,10 +9,13 @@
 jsmode @"WebView2\" + currentmacrofilename;
 
 js {
-    let myTargetAiDirectory = @""; // 
-                                   // macrodir() + @"\HmOpenAiGpt"; や @"C:\mydir\HmGoogleGemini"; などといった形で、指定する。
-                                   // よくわからない人は、「このHmAiWriting.mac」自体を「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに入れておけば、
-                                   // 対象エンジンを検知できる。
+
+    let myTargetAiDirectory = "";
+
+    // 「macrodir()+"\\HmOpenAiGpt"」 や 「"C:\\mydir\\HmGoogleGemini"」 などといった形で、指定する。
+    // よくわからない人は、「このHmAiWriting.mac」自体を、
+    // 「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに入れておけば、対象エンジンを検知できる。
+
 
     // 設定がないなら、このマクロは対象の会話AIマクロ(HmOpenAiGpt.macもしくはHmGoogleGemini.mac)と同じ場所
     if (!myTargetAiDirectory) {
@@ -41,7 +44,7 @@ if ($targetAiEngine == "") {
     """
     「HmOpenAiGpt.mac」「HmGoogleGemini.mac」
     いずれのAIマクロも見つかりませんでした。
-    
+
     変数「myTargetAiDirectory」に「対象AIのディレクトリ」を設定するか、
     もしくは「対象AIのフォルダ」に「HmAiWriting.macをコピー」してください。
     """
@@ -53,57 +56,64 @@ if ($targetAiEngine == "") {
 jsmode @"WebView2\" + $targetAiEngine;
 js {
 
-// 最後した「質問と応答」をＡＩ記憶に残すか残さないのか。
-// (その場限りの指示を出したつもりでもＡＩはずっと記憶していると、返答によからぬ影響を与えるため）
-var _shouldRememberLastResponse = true;
+// 質問内容を記憶バッファー
+var _globalRequestQuestionText = "";
 
-var _tempRequestQuestionText = "";
+// 最後した「質問と応答」をＡＩ記憶に残すか残さないのか。
+// (その場限りの指示を出したつもりでもＡＩはずっと記憶するので、返答によからぬ影響を与えるため）
+var _globalRememberLastResponse = true;
+
 function onRequestQuestionText() {
 
     // リセットなら、非同期でリセットコマンドを送信
     // 「レンダリング枠」で「全リセット」のボタンを押したかのような動きにしておく
-    if (_tempRequestQuestionText == "reset") {
+    if (_globalRequestQuestionText == "reset") {
         hidemaru.setTimeout( ()=>{onHtmlEventHandler("reset"); }, 100 );
 
         return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
     }
-    else if (_tempRequestQuestionText == "paste") {
+    else if (_globalRequestQuestionText == "paste") {
         hidemaru.setTimeout( ()=>{onHtmlEventHandler("paste"); }, 100 );
 
         return false; // HmOpenAiGptやHmGoogleGeminiの元来のメニューは出さない
     }
 
     // それ以外なら、構築した質問内容のテキストを返す。
-    return _tempRequestQuestionText;
+    return _globalRequestQuestionText;
 }
 
 function onCompleteAnswerText(answer_text) {
 
     // クリップボードに追加しておく(境界をわかりやすくするため、改行を加えておく)
     setclipboard(answer_text + "\n");
-
-    insert("\n");
+    
+    // カーソルが先頭にないなら、行末で改行を入れる。
+    if(column() > 0) {
+        golinend2();
+        insert("\n");
+    }
 
     // その指示と返答を、AI履歴として記憶するべきではないなら、AIの記憶から消す
-    if (!_shouldRememberLastResponse) {
+    if (!_globalRememberLastResponse) {
         hidemaru.setTimeout(() => { onHtmlEventHandler("pop"); }, 300);
     }
 }
 
 function myEntryPoint() {
 
-    _tempRequestQuestionText = "";
+    _globalRequestQuestionText = "";
 
-    let targetAiEngine = getVar("$targetAiEngine");
-    let targetAiMacroPath = getVar("$targetAiMacroPath");
-    let currentMacroDir = currentmacrodirectory();
+    const targetAiEngine = getVar("$targetAiEngine");
+    const targetAiMacroPath = getVar("$targetAiMacroPath");
+    const currentMacroDir = currentmacrodirectory();
 
-    let selectedText = hidemaru.getSelectedText();
+    const selectedText = hidemaru.getSelectedText();
 
     let menuhash = [];
     // テキストの選択がある時のメニュー
     if (selectedText) {
-        menuhash = [
+        menuhash =
+        [
             {
                 text: "タイトル考案(&T) ⇐ 選択中の複数の単語",
                 cmnd: "以下のキーワードを基に日本語でタイトルを９個提案してください\n\n###\n\n" + selectedText,
@@ -232,7 +242,8 @@ function myEntryPoint() {
     }
     // テキストの選択が無い時のメニュー
     else {
-        menuhash = [
+        menuhash =
+        [
             {
                 text: "全リセット(&R)",
                 cmnd: "reset",
@@ -246,11 +257,11 @@ function myEntryPoint() {
         ];
     }
 
-    let menuTextList = menuhash.map(item=>item.text);
-    let menuCommandList = menuhash.map(item=>item.cmnd);
-    let menuHistoryList = menuhash.map(item=>item.hist);
+    const menuTextList = menuhash.map(item=>item.text);
+    const menuCommandList = menuhash.map(item=>item.cmnd);
+    const menuHistoryList = menuhash.map(item=>item.hist);
 
-    let selectedMenuID = menuarray(menuTextList);
+    const selectedMenuID = menuarray(menuTextList);
 
 
     // 0はメニューキャンセル
@@ -265,18 +276,21 @@ function myEntryPoint() {
 
     // なんだかのメニュー内容を選んでいるのであれば...
     else {
-        let selectedMenuIX = selectedMenuID - 1; // menu は選択した番号が1から始まるから0からになおす
+        const selectedMenuIX = selectedMenuID - 1; // menu は選択した番号が1から始まるから0からになおす
 
         // メニューで選んだ内容を後で使えるようにvar大域の変数に代入する。
-        _tempRequestQuestionText = menuCommandList[selectedMenuIX]
+        _globalRequestQuestionText = menuCommandList[selectedMenuIX]
 
         // この応答はＡＩ記憶のヒストリーに残すのか残さないのか。後で使うのでvar大域の変数に代入する。
-        _shouldRememberLastResponse = menuHistoryList[selectedMenuIX]
+        _globalRememberLastResponse = menuHistoryList[selectedMenuIX]
 
-        let argobj = { onRequestQuestionText: 1, onCompleteAnswerText: 1 };
+        const argobj = {
+            onRequestQuestionText: 1,
+            onCompleteAnswerText: 1
+        };
 
         // 確実にpostExecMacroFileを行う書き方
-        let peRetry = hidemaru.setInterval(()=>{
+        const peRetry = hidemaru.setInterval(()=>{
             if (hidemaru.isMacroExecuting()) return; // 再挑戦
             let isScheduled = hidemaru.postExecMacroFile(`"${targetAiMacroPath}"`, argobj ) ?? 1;
             if (isScheduled) { hidemaru.clearInterval(peRetry); }
