@@ -58,7 +58,7 @@ if ($targetAiEngine == "") {
 jsmode @"WebView2\" + $targetAiEngine;
 js {
 
-function getMyMenuHash() {
+function getMyCustomMenuHash() {
     const selectedText = hidemaru.getSelectedText();
 
     // テキストの選択がある時のメニュー
@@ -250,7 +250,7 @@ function onCompleteAnswerText(answer_text) {
     }
 }
 
-function myEntryPoint() {
+function doMyCustomMain() {
 
     _globalRequestQuestionText = "";
     _globalRememberLastResponse = true;
@@ -259,7 +259,7 @@ function myEntryPoint() {
     const targetAiMacroPath = getVar("$targetAiMacroPath");
     const currentMacroDir = currentmacrodirectory();
 
-    const menuhash = getMyMenuHash();
+    const menuhash = getMyCustomMenuHash();
 
     const menuTextList    = menuhash.map(item=>item.text);
     const menuCommandList = menuhash.map(item=>item.cmnd);
@@ -302,7 +302,7 @@ function myEntryPoint() {
     }
 }
 
-myEntryPoint();
+doMyCustomMain();
 
 
 } // js
