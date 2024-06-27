@@ -106,7 +106,7 @@ function getMyCustomMenuHash() {
             },
             {
                 text: "詳細文章案(&D) ⇐ 選択中の文章",
-                cmnd: "# 命令書:\nあなたは最高のブロガーです。\n次の文章の全てを深い内容の詳細な文章に直して下さい。\n\n###\n\n" + selectedText,
+                cmnd: "# 命令書:\nあなたは最高のブロガーです。\n次の文章のを内容を膨らませて詳細な文章に直して下さい。\n\n###\n\n" + selectedText,
                 hist: false,
             },
             {
