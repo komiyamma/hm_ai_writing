@@ -1,9 +1,11 @@
 ﻿/*
- * HmAiWriting v1.1.2.4
+ * HmAiWriting v1.1.2.5
  *
- * Copyright (c) 2024 Akitsugu Komiyama
+ * Copyright (c) 2024-2024 Akitsugu Komiyama
  * under the MIT License
  */
+
+hidemaruversion "9.35.99";
 
 
 jsmode @"WebView2\" + currentmacrofilename;
@@ -293,12 +295,17 @@ function doMyCustomMain() {
             onCompleteAnswerText: 1
         };
 
-        // 確実にpostExecMacroFileを行う書き方
-        const peRetry = hidemaru.setInterval(()=>{
-            if (hidemaru.isMacroExecuting()) return; // 再挑戦
-            let isScheduled = hidemaru.postExecMacroFile(`"${targetAiMacroPath}"`, argobj ) ?? 1;
-            if (isScheduled) { hidemaru.clearInterval(peRetry); }
-        }, 100);
+        let isScheduled = 0;
+        function attemptExecution() {
+            if (!isScheduled) {
+                isScheduled = hidemaru.postExecMacroFile(`"${targetAiMacroPath}"`, argobj );
+            }
+            if (!isScheduled) {
+                hidemaru.setTimeout(attemptExecution, 100);
+            }
+        }
+
+        hidemaru.setTimeout(attemptExecution, 0);
     }
 }
 
