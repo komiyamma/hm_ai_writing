@@ -11,7 +11,7 @@
 「HmOpenAiGpt.mac」もしくは「HmGoogleGemini.mac」と同じフォルダに配置して利用します。
  (どちらの対話エンジンでも利用出来ます)
 
-より詳しい情報は作者様のサイトをご確認ください。
+より詳しい情報は作者様のサイトをご確認ください。  
 https://秀丸マクロ.net/?page=nobu_tool_hm_aiwriting
 
 ## 主な機能
