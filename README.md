@@ -1,6 +1,6 @@
 # HmAiWriting
 
-![HmAiWriting v1.1.2](https://img.shields.io/badge/HmAiWriting-v1.1.2-6479ff.svg)
+![latest release](https://img.shields.io/github/v/release/komiyamma/hm_ai_writing)
 ![openai gpt](https://img.shields.io/badge/OpenAI-GPT-6479ff.svg)
 ![google gemini](https://img.shields.io/badge/Google-Gemini-6479ff.svg)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
